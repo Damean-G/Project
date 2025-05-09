@@ -24,8 +24,9 @@
 
 ## 🎥 Demo / Resources
 - [Link to Demo Video] *(https://drive.google.com/file/d/1QjQ9p8zIiyrz7kD6yHE9szU2R0tFpwT4/view?resourcekey)*
-- [GitHub Repository](#) *(https://github.com/NickShein222/AI-For-Social-Goods)*
-- [Presentation Slides](#) *(https://docs.google.com/presentation/d/1TOzlv1AE6_LkzH26q4tJC53cAwZL-MKZOB_FGAaeBvs/edit?usp=sharing)*
+- [GitHub Repository] *(https://github.com/NickShein222/AI-For-Social-Goods)*
+- [Presentation Slides] *(https://docs.google.com/presentation/d/1TOzlv1AE6_LkzH26q4tJC53cAwZL-MKZOB_FGAaeBvs/edit?usp=sharing)*
+- [Project Code] *(https://docs.google.com/document/d/1gmHgy9an0OhJ6Bg2E8Y3bLrDExRoBzvybj_rEIgkiz4/edit?usp=sharing)*
 
 ---
 
