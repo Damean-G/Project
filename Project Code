@@ -1,0 +1,235 @@
+import streamlit as st
+import requests
+import random
+import datetime
+from PIL import Image
+
+
+# --- Page Config ---
+st.set_page_config(page_title="Creekside Trails", layout="wide")
+
+
+# --- Hero Section ---
+with st.container():
+    st.markdown("""
+    <div style="position:relative;height:90vh;background:url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdHZjcmViYnFtZmU2aW5wMDhkdW8yN2Zkcm9xb2c5cmNvZXBrZGN4NiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o85xEfx9JC73A6gq4/giphy.gif') center/cover no-repeat;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;color:white;">
+        <div style="background:rgba(0,0,0,0.4);padding:20px;border-radius:10px;">
+            <h1>Welcome to Creekside Trails</h1>
+            <p>Explore nature with AI — learn, hike, and protect.</p>
+            <a href="#trail-map">
+                <button style="padding:10px 20px;background:#006d77;color:white;border:none;border-radius:8px;">
+                    Start Your Hike
+                </button>
+            </a>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# --- Trail Segments ---
+st.markdown('<h2 id="trail-map">Trail Segments</h2>', unsafe_allow_html=True)
+
+
+trail_data = {
+    "Map of William Street to Phelan Avenue": {"image": "images/segment1.png", "risk": 4},
+    "Map of Highway 237 Bikeway to Montague Expressway": {"image": "images/segment2.png", "risk": 6},
+    "Map of Tully Road to Yerba Buena Road": {"image": "images/segment3.png", "risk": 5},
+    "Map of Yerba Buena Road to County jurisdiction": {"image": "images/segment4.png", "risk": 7},
+    "Map of Alignment from Berryessa BART to BRT Santa Clara Street": {"image": "images/segment5.png", "risk": 8},
+    "Map of 'Odette Morrow Trail'": {"image": "images/segment6.png", "risk": 6},
+}
+
+
+left_col, right_col = st.columns([1, 2])
+with left_col:
+    st.subheader("📍 Choose a Trail Segment")
+    selected_trail = st.selectbox("Select a trail segment:", list(trail_data.keys()))
+segment = trail_data[selected_trail]
+with right_col:
+    st.image(segment["image"], use_container_width=True, caption=selected_trail)
+
+
+st.divider()
+
+
+# --- Combined AI Popularity & Weather Score ---
+st.header("🧠 Trail Comfort & Weather Score")
+
+
+# Crowd prediction based on time
+hour_of_day = datetime.datetime.now().hour
+if 7 <= hour_of_day <= 10:
+    crowd_level = 3  # low
+elif 11 <= hour_of_day <= 16:
+    crowd_level = 8  # high
+else:
+    crowd_level = 5  # medium
+
+
+# Segment popularity adds to crowd
+segment_popularity = segment["risk"]  # proxy for now
+crowd_score = min(round((crowd_level + segment_popularity) / 2), 10)
+
+
+# --- Live Weather API Fetch for Santa Clara, CA ---
+api_key = "283c59d61c54b7d0c71676885db453f8"
+weather_url = f"http://api.openweathermap.org/data/2.5/weather?q=Santa Clara&units=imperial&appid={api_key}"
+
+
+try:
+    weather_data = requests.get(weather_url).json()
+
+
+    temperature = weather_data["main"]["temp"]
+    wind_speed = weather_data["wind"]["speed"]
+    description = weather_data["weather"][0]["description"].capitalize()
+    icon_code = weather_data["weather"][0]["icon"]
+    icon_url = f"http://openweathermap.org/img/wn/{icon_code}@2x.png"
+
+
+    # Weather impact score
+    weather_score = 0
+    if temperature >= 85:
+        weather_score += 2
+    if "rain" in description.lower():
+        weather_score += 3
+    if wind_speed >= 15:
+        weather_score += 1
+
+
+    # Final Trail Safety & Comfort Index (lower is better)
+    overall_score = crowd_score + weather_score
+
+
+    if overall_score >= 12:
+        st.error(f"🔥 Comfort & Safety Score: {overall_score}/20 – Hot, crowded, and risky conditions today.")
+        st.markdown("""
+        - 🥵 Consider waiting until evening
+        - 💧 Stay hydrated and rest often
+        - 🧑‍🤝‍🧑 Expect high trail traffic
+        """)
+    elif overall_score >= 7:
+        st.warning(f"⚠️ Comfort & Safety Score: {overall_score}/20 – Conditions are moderate.")
+        st.markdown("""
+        - 😅 May be warm or lightly crowded
+        - 📅 Consider off-peak times
+        - 👟 Trail might be damp or breezy
+        """)
+    else:
+        st.success(f"✅ Comfort & Safety Score: {overall_score}/20 – Great time for a hike!")
+        st.markdown("""
+        - 🌞 Ideal temperature and clear skies
+        - 🧘‍♂️ Low crowd conditions
+        - 🌲 Enjoy the peace and trail space
+        """)
+
+
+except Exception as e:
+    st.error("⚠️ Unable to fetch live weather data. Comfort score may not be accurate.")
+
+
+st.divider()
+
+
+# --- Weather and Activities ---
+col1, col2 = st.columns(2)
+
+
+try:
+    with col1:
+        st.subheader("Current Weather")
+        st.image(icon_url, width=100)  # Weather icon image
+        st.write(f"🌡️ **Temperature:** {temperature}°F")
+        st.write(f"🌥️ **Condition:** {description}")
+        st.write(f"💨 **Wind Speed:** {wind_speed} mph")
+        st.success("Trail Status: Open")
+except:
+    with col1:
+        st.subheader("Current Weather")
+        st.error("⚠️ Unable to display weather at this moment.")
+
+
+with col2:
+    st.subheader("Trail Activities")
+    allActivities = [
+        "📸 Take a picture of the prettiest flower you see",
+        "🐦 Try to spot a bird and note its color",
+        "🥾 Find a uniquely shaped rock",
+        "🌳 Touch the bark of a tree and describe how it feels",
+        "🛤️ Take a path you've never tried before",
+        "🌼 Find 3 different types of flowers",
+        "🍂 Pick up 1 piece of trash",
+        "🐾 Look for animal footprints on the trail",
+        "💧 Listen carefully — can you hear water nearby?",
+        "🌲 Hug a tree and close your eyes for 10 seconds",
+        "🔍 Spot a butterfly or bee",
+        "☀️ Feel the temperature of a sunny vs shaded spot",
+        "🧘‍♂️ Sit quietly for 2 minutes and just listen to nature",
+        "🛶 Find something floating in a creek or stream",
+        "🐜 Watch a line of ants moving and guess what they're carrying"
+    ]
+    activities = random.sample(allActivities, 5)
+    for activity in activities:
+        st.info(activity)
+    if st.button("🔄 Refresh Activities"):
+        st.experimental_rerun()
+
+
+st.divider()
+
+
+# --- Identify Species Section (iNaturalist API) ---
+st.header("Identify Species")
+
+
+uploaded_file = st.file_uploader("Take a photo to identify plants and wildlife", type=["png", "jpg", "jpeg"])
+
+
+if uploaded_file is not None:
+    st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
+    with st.spinner("🔎 Identifying species using iNaturalist..."):
+        token = "YOUR_INATURALIST_JWT_TOKEN"
+        headers = {"Authorization": f"Bearer {token}"}
+        files = {"image": uploaded_file.getvalue()}
+        response = requests.post("https://api.inaturalist.org/v1/computervision/score_image", headers=headers, files=files)
+        if response.status_code == 200:
+            data = response.json()
+            if data["results"]:
+                top_result = data["results"][0]
+                species_name = top_result["taxon"]["name"]
+                common_name = top_result["taxon"].get("preferred_common_name", "Unknown")
+                photo_url = top_result["taxon"].get("default_photo", {}).get("square_url")
+                st.success(f"Common Name: {common_name}")
+                st.write(f"Scientific Name: *{species_name}*")
+                if photo_url:
+                    st.image(photo_url, width=150)
+            else:
+                st.error("No species identified. Try a clearer picture.")
+        else:
+            st.error("❌ Failed to connect to iNaturalist. Check your token or internet connection.")
+
+
+# --- Smart Audio Guide ---
+st.header("Smart Audio Guide")
+col1, col2 = st.columns(2)
+with col1:
+    st.subheader("👧👦 Kids' Audio Guide")
+    st.write("Fun, interactive stories for young explorers!")
+with col2:
+    st.subheader("👩👨 Adults' Audio Guide")
+    st.write("Deeper insights into nature's wonders for adult hikers.")
+
+
+# --- Emergency Bar ---
+st.markdown("""
+<div style="background:#d00000;color:white;text-align:center;padding:10px;font-weight:bold;
+position:fixed;bottom:0;width:100%;z-index:1000;">
+ 🚨 Emergency SOS
+</div>
+""", unsafe_allow_html=True)
+
+
+
+
+
