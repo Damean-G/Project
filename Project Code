@@ -27,7 +27,7 @@ with st.container():
     """, unsafe_allow_html=True)
 
 
-# --- Trail Segments ---
+```# --- Trail Segments ---
 st.markdown('<h2 id="trail-map">Trail Segments</h2>', unsafe_allow_html=True)
 
 
@@ -129,7 +129,7 @@ except Exception as e:
     st.error("⚠️ Unable to fetch live weather data. Comfort score may not be accurate.")
 
 
-st.divider()
+st.divider()```
 
 
 # --- Weather and Activities ---
